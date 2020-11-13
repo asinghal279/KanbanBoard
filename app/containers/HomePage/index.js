@@ -9,15 +9,12 @@ import React, { useState } from 'react';
 import {
   Box,
   Button,
-  ButtonGroup,
   Collapse,
   Flex,
   FormControl,
   Grid,
   Heading,
   IconButton,
-  Input,
-  localStorageManager,
   Stack,
   Textarea,
   useDisclosure,
@@ -162,7 +159,8 @@ export default function HomePage() {
                                 return (
                                   <Box
                                     draggable
-                                    h={150}
+                                    h={20}
+                                    p={4}
                                     bg="white"
                                     rounded="md"
                                     color="#282c34"
@@ -186,14 +184,14 @@ export default function HomePage() {
                             handleToggle(onToggle, setCurrentId, id)
                           }
                         >
-                          Click Me
+                          + Add New Task
                         </Button>
                         <Collapse
                           in={isOpen && currentId == id}
                           id={id}
                           animateOpacity
                         >
-                          <Box p={2} mt="4" bg="white" rounded="sm" shadow="md">
+                          <Box p={2} bg="white" rounded="sm" shadow="md">
                             <form
                               onSubmit={e => {
                                 handleAddItem(
@@ -220,7 +218,7 @@ export default function HomePage() {
                                     color="white"
                                     type="submit"
                                   >
-                                    Add
+                                    + Add
                                   </Button>
                                   <IconButton
                                     aria-label="Search database"
