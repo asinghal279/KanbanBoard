@@ -149,7 +149,9 @@ export default function HomePage() {
                         ref={provided.innerRef}
                       >
                         {column.items.map((item, index) => {
-                          return <TaskCard {...item} index={index} />;
+                          return (
+                            <TaskCard key={item.id} {...item} index={index} />
+                          );
                         })}
                         {provided.placeholder}
                         <Button
