@@ -10,13 +10,22 @@ import {
   Box,
   Button,
   ButtonGroup,
+  Collapse,
+  Flex,
+  FormControl,
   Grid,
   Heading,
+  IconButton,
+  Input,
+  localStorageManager,
   Stack,
+  Textarea,
+  useDisclosure,
 } from '@chakra-ui/core';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import uuid from 'uuid/v4';
 import { v4 } from 'uuid';
+import { CloseIcon } from '@chakra-ui/icons';
 
 const itemsFromBackend = [
   { id: uuid(), content: 'First task' },
@@ -33,6 +42,10 @@ const columnsFromBackend = {
   },
   [uuid()]: {
     name: 'In-Progress',
+    items: [],
+  },
+  [uuid()]: {
+    name: 'Completed',
     items: [],
   },
 };
@@ -75,10 +88,50 @@ const onDragEnd = (result, columns, setColumns) => {
   }
 };
 
+const handleToggle = (onToggle, setCurrentId, currentId) => {
+  setCurrentId(currentId);
+  onToggle();
+};
+
+const handleAddItem = (
+  e,
+  item,
+  columns,
+  currentId,
+  setColumns,
+  setNewItem,
+  onToggle,
+) => {
+  e.preventDefault();
+  if (item != '') {
+    const column = columns[currentId];
+    let copiedItems = [...column.items];
+    const obj = {
+      id: uuid(),
+      content: item,
+    };
+    // console.log(obj);
+    copiedItems.push(obj);
+    console.log(copiedItems);
+    setColumns({
+      ...columns,
+      [currentId]: {
+        ...column,
+        items: copiedItems,
+      },
+    });
+    setNewItem('');
+    onToggle();
+  }
+};
+
 export default function HomePage() {
+  const { isOpen, onToggle } = useDisclosure();
   const [columns, setColumns] = useState(columnsFromBackend);
+  const [currentId, setCurrentId] = useState(null);
+  const [newItem, setNewItem] = useState('');
   return (
-    <Box bg="#282c34" w="100%" h="100%">
+    <Box bg="#282c34" w="100%" minH="100vh" px={5}>
       <DragDropContext onDragEnd={res => onDragEnd(res, columns, setColumns)}>
         <Grid templateColumns="repeat(3, 1fr)" gap={6}>
           {Object.entries(columns).map(([id, column]) => {
@@ -92,7 +145,7 @@ export default function HomePage() {
                       </Heading>
                       <Stack
                         w="100%"
-                        bg="#49505e"
+                        bg={snapshot.isDraggingOver ? 'lightgreen' : '#49505e'}
                         p={4}
                         spacing={4}
                         {...provided.droppableProps}
@@ -126,6 +179,62 @@ export default function HomePage() {
                           );
                         })}
                         {provided.placeholder}
+                        <Button
+                          id={id}
+                          d={isOpen && currentId == id ? 'none' : 'block'}
+                          onClick={() =>
+                            handleToggle(onToggle, setCurrentId, id)
+                          }
+                        >
+                          Click Me
+                        </Button>
+                        <Collapse
+                          in={isOpen && currentId == id}
+                          id={id}
+                          animateOpacity
+                        >
+                          <Box p={2} mt="4" bg="white" rounded="sm" shadow="md">
+                            <form
+                              onSubmit={e => {
+                                handleAddItem(
+                                  e,
+                                  newItem,
+                                  columns,
+                                  currentId,
+                                  setColumns,
+                                  setNewItem,
+                                  onToggle,
+                                );
+                              }}
+                            >
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Enter a title for this item..."
+                                  value={newItem}
+                                  onChange={e => setNewItem(e.target.value)}
+                                />
+                                <Flex justify="space-between">
+                                  <Button
+                                    size="sm"
+                                    bg="#5aac44"
+                                    color="white"
+                                    type="submit"
+                                  >
+                                    Add
+                                  </Button>
+                                  <IconButton
+                                    aria-label="Search database"
+                                    size="sm"
+                                    bg="none"
+                                    color="black"
+                                    icon={<CloseIcon />}
+                                    onClick={onToggle}
+                                  />
+                                </Flex>
+                              </FormControl>
+                            </form>
+                          </Box>
+                        </Collapse>
                       </Stack>
                     </Box>
                   );
