@@ -19,8 +19,8 @@ import {
   Textarea,
   useDisclosure,
 } from '@chakra-ui/core';
-import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
-import uuid from 'uuid/v4';
+import { Droppable, DragDropContext } from 'react-beautiful-dnd';
+import { v4 as uuid } from 'uuid';
 import { CloseIcon } from '@chakra-ui/icons';
 import TaskCard from '../../components/TaskCard/index';
 
