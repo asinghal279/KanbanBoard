@@ -21,8 +21,8 @@ import {
 } from '@chakra-ui/core';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import uuid from 'uuid/v4';
-import { v4 } from 'uuid';
 import { CloseIcon } from '@chakra-ui/icons';
+import TaskCard from '../../components/TaskCard/index';
 
 const itemsFromBackend = [
   { id: uuid(), content: 'First task' },
@@ -149,32 +149,7 @@ export default function HomePage() {
                         ref={provided.innerRef}
                       >
                         {column.items.map((item, index) => {
-                          return (
-                            <Draggable
-                              key={item.id}
-                              draggableId={item.id}
-                              index={index}
-                            >
-                              {(provided, snapshot) => {
-                                return (
-                                  <Box
-                                    draggable
-                                    h={20}
-                                    p={4}
-                                    bg="white"
-                                    rounded="md"
-                                    color="#282c34"
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    style={{ ...provided.draggableProps.style }}
-                                  >
-                                    {item.content}
-                                  </Box>
-                                );
-                              }}
-                            </Draggable>
-                          );
+                          return <TaskCard {...item} index={index} />;
                         })}
                         {provided.placeholder}
                         <Button

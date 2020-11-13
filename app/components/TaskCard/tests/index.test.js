@@ -1,6 +1,6 @@
 /**
  *
- * Tests for Task
+ * Tests for TaskCard
  *
  * @see https://github.com/react-boilerplate/react-boilerplate/tree/master/docs/testing
  *
@@ -10,13 +10,12 @@ import React from 'react';
 import { render } from 'react-testing-library';
 // import 'jest-dom/extend-expect'; // add some helpful assertions
 
-import { Task } from '../index';
+import TaskCard from '../index';
 
-describe('<Task />', () => {
+describe('<TaskCard />', () => {
   it('Expect to not log errors in console', () => {
     const spy = jest.spyOn(global.console, 'error');
-    const dispatch = jest.fn();
-    render(<Task dispatch={dispatch} />);
+    render(<TaskCard />);
     expect(spy).not.toHaveBeenCalled();
   });
 
@@ -32,7 +31,7 @@ describe('<Task />', () => {
   it.skip('Should render and match the snapshot', () => {
     const {
       container: { firstChild },
-    } = render(<Task />);
+    } = render(<TaskCard />);
     expect(firstChild).toMatchSnapshot();
   });
 });
