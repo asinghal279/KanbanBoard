@@ -6,17 +6,19 @@
 
 import React from 'react';
 import { Draggable } from 'react-beautiful-dnd';
-import { Box } from '@chakra-ui/core';
+import { Box, Flex, IconButton, Text } from '@chakra-ui/core';
+import { DeleteIcon } from '@chakra-ui/icons';
 
-function Task({ id, index, content }) {
+function Task({ id, index, content, columnId, deleteItem }) {
   return (
     <Draggable key={id} draggableId={id} index={index}>
       {(provided, snapshot) => {
         return (
-          <Box
+          <Flex
             draggable
             h={20}
             p={4}
+            justify="space-between"
             bg="white"
             rounded="md"
             color="#282c34"
@@ -25,8 +27,15 @@ function Task({ id, index, content }) {
             {...provided.dragHandleProps}
             style={{ ...provided.draggableProps.style }}
           >
-            {content}
-          </Box>
+            <Text fontWeight={600}>{content}</Text>
+            <IconButton
+              size="sm"
+              bg="none"
+              color="black"
+              icon={<DeleteIcon />}
+              onClick={() => deleteItem(index, columnId)}
+            />
+          </Flex>
         );
       }}
     </Draggable>

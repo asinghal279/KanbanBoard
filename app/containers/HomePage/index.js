@@ -122,6 +122,19 @@ const handleAddItem = (
   }
 };
 
+const handleDeleteItem = (itemIndex, columns, columnId, setColumns) => {
+  const column = columns[columnId];
+  let copiedItems = [...column.items];
+  copiedItems.splice(itemIndex, 1);
+  setColumns({
+    ...columns,
+    [columnId]: {
+      ...column,
+      items: copiedItems,
+    },
+  });
+};
+
 export default function HomePage() {
   const { isOpen, onToggle } = useDisclosure();
   const [columns, setColumns] = useState(columnsFromBackend);
@@ -137,7 +150,7 @@ export default function HomePage() {
                 {(provided, snapshot) => {
                   return (
                     <Box>
-                      <Heading color="white" textAlign="center">
+                      <Heading color="white" textAlign="center" mb={2}>
                         {column.name}
                       </Heading>
                       <Stack
@@ -150,7 +163,20 @@ export default function HomePage() {
                       >
                         {column.items.map((item, index) => {
                           return (
-                            <TaskCard key={item.id} {...item} index={index} />
+                            <TaskCard
+                              key={item.id}
+                              {...item}
+                              index={index}
+                              columnId={id}
+                              deleteItem={(itemIndex, columnId) =>
+                                handleDeleteItem(
+                                  itemIndex,
+                                  columns,
+                                  columnId,
+                                  setColumns,
+                                )
+                              }
+                            />
                           );
                         })}
                         {provided.placeholder}
