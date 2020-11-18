@@ -4,12 +4,23 @@
  *
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
-import { Box, Flex, IconButton, Text } from '@chakra-ui/core';
+import {
+  Box,
+  Editable,
+  EditableInput,
+  EditablePreview,
+  Flex,
+  IconButton,
+  Input,
+  Text,
+} from '@chakra-ui/core';
 import { DeleteIcon } from '@chakra-ui/icons';
 
-function Task({ id, index, content, columnId, deleteItem }) {
+function Task({ id, index, content, columnId, deleteItem, editItem }) {
+  const [contentValue, setContentValue] = useState(content);
+
   return (
     <Draggable key={id} draggableId={id} index={index}>
       {(provided, snapshot) => {
@@ -27,7 +38,16 @@ function Task({ id, index, content, columnId, deleteItem }) {
             {...provided.dragHandleProps}
             style={{ ...provided.draggableProps.style }}
           >
-            <Text fontWeight={600}>{content}</Text>
+            <Input
+              value={contentValue}
+              onChange={e => setContentValue(e.target.value)}
+              onBlur={() => editItem(index, columnId, contentValue)}
+              padding={0}
+              outline="none"
+              border="none"
+              w="fit-content"
+              fontWeight={600}
+            />
             <IconButton
               size="sm"
               bg="none"

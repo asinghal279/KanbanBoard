@@ -135,6 +135,21 @@ const handleDeleteItem = (itemIndex, columns, columnId, setColumns) => {
   });
 };
 
+const handleEditItem = (itemIndex, columns, columnId, setColumns, data) => {
+  const column = columns[columnId];
+  let copiedItems = [...column.items];
+  const itemToBeEditted = copiedItems.splice(itemIndex, 1)[0];
+  itemToBeEditted.content = data;
+  copiedItems.splice(itemIndex, 0, itemToBeEditted);
+  setColumns({
+    ...columns,
+    [columnId]: {
+      ...column,
+      items: copiedItems,
+    },
+  });
+};
+
 export default function HomePage() {
   const { isOpen, onToggle } = useDisclosure();
   const [columns, setColumns] = useState(columnsFromBackend);
@@ -168,6 +183,15 @@ export default function HomePage() {
                               {...item}
                               index={index}
                               columnId={id}
+                              editItem={(itemIndex, columnId, data) => {
+                                handleEditItem(
+                                  itemIndex,
+                                  columns,
+                                  columnId,
+                                  setColumns,
+                                  data,
+                                );
+                              }}
                               deleteItem={(itemIndex, columnId) =>
                                 handleDeleteItem(
                                   itemIndex,
