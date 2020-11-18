@@ -5,7 +5,7 @@
  *
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -15,13 +15,24 @@ import {
   Grid,
   Heading,
   IconButton,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  Editable,
+  EditableInput,
+  EditablePreview,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Stack,
   Textarea,
   useDisclosure,
+  ButtonGroup,
 } from '@chakra-ui/core';
 import { Droppable, DragDropContext } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
-import { CloseIcon } from '@chakra-ui/icons';
+import { CheckIcon, CloseIcon, EditIcon } from '@chakra-ui/icons';
 import TaskCard from '../../components/TaskCard/index';
 
 const itemsFromBackend = [
@@ -166,8 +177,61 @@ export default function HomePage() {
   );
   const [currentId, setCurrentId] = useState(null);
   const [newItem, setNewItem] = useState('');
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [activeItemIndex, setActiveItemIndex] = useState(null);
+  const [activeItemColumnId, setActiveItemColumnId] = useState(null);
+  const [contentValue, setContentValue] = useState('');
+
+  useEffect(() => {
+    if (activeItemColumnId != null && activeItemIndex != null) {
+      setContentValue(
+        columns[activeItemColumnId].items[activeItemIndex].content,
+      );
+      setModalIsOpen(true);
+    }
+  }, [activeItemColumnId, activeItemIndex]);
+
   return (
     <Box bg="#282c34" w="100%" minH="100vh" px={5}>
+      <Modal isOpen={modalIsOpen}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Modal Title</ModalHeader>
+          <ModalBody>
+            <Textarea
+              value={contentValue}
+              onChange={e => setContentValue(e.target.value)}
+              onBlur={() =>
+                handleEditItem(
+                  activeItemIndex,
+                  columns,
+                  activeItemColumnId,
+                  setColumns,
+                  contentValue,
+                )
+              }
+              padding={0}
+              outline="none"
+              size="fit-content"
+              border="none"
+              fontWeight={600}
+              style={{ overflow: 'hidden' }}
+            />
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              colorScheme="blue"
+              mr={3}
+              onClick={() => setModalIsOpen(false)}
+            >
+              Close
+            </Button>
+            <Button variant="ghost">Secondary Action</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       <DragDropContext onDragEnd={res => onDragEnd(res, columns, setColumns)}>
         <Grid templateColumns="repeat(3, 1fr)" gap={6}>
           {Object.entries(columns).map(([id, column]) => {
@@ -194,14 +258,9 @@ export default function HomePage() {
                               {...item}
                               index={index}
                               columnId={id}
-                              editItem={(itemIndex, columnId, data) => {
-                                handleEditItem(
-                                  itemIndex,
-                                  columns,
-                                  columnId,
-                                  setColumns,
-                                  data,
-                                );
+                              editItem={(itemIndex, columnId) => {
+                                setActiveItemColumnId(columnId);
+                                setActiveItemIndex(itemIndex);
                               }}
                               deleteItem={(itemIndex, columnId) =>
                                 handleDeleteItem(

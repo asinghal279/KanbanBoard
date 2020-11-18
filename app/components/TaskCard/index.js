@@ -27,43 +27,15 @@ import {
   InfoIcon,
 } from '@chakra-ui/icons';
 
-function CustomControlsExample() {
-  /* Here's a custom control */
-  function EditableControls({ isEditing, onSubmit, onCancel, onEdit }) {
-    return isEditing ? (
-      <ButtonGroup justifyContent="center" size="sm">
-        <IconButton icon={<CheckIcon />} onClick={onSubmit} />
-        <IconButton icon={<CloseIcon />} onClick={onCancel} />
-      </ButtonGroup>
-    ) : (
-      <Flex justifyContent="center">
-        <IconButton size="sm" icon={<EditIcon />} onClick={onEdit} />
-      </Flex>
-    );
-  }
-
-  return (
-    <Editable
-      textAlign="center"
-      defaultValue="Rasengan ⚡️"
-      fontSize="2xl"
-      isPreviewFocusable={false}
-      submitOnBlur={false}
-    >
-      {props => (
-        <>
-          <EditablePreview />
-          <EditableInput />
-          <EditableControls {...props} />
-        </>
-      )}
-    </Editable>
-  );
-}
-
-function Task({ id, index, content, columnId, deleteItem, editItem }) {
-  const [contentValue, setContentValue] = useState(content);
-
+function Task({
+  id,
+  index,
+  content,
+  columnId,
+  deleteItem,
+  editItem,
+  modalToggle,
+}) {
   return (
     <Draggable key={id} draggableId={id} index={index}>
       {(provided, snapshot) => {
@@ -80,19 +52,18 @@ function Task({ id, index, content, columnId, deleteItem, editItem }) {
             {...provided.dragHandleProps}
             style={{ ...provided.draggableProps.style }}
           >
-            {/* <CustomControlsExample /> */}
-            <Textarea
+            {/* <Textarea
               value={contentValue}
               onChange={e => setContentValue(e.target.value)}
               onBlur={() => editItem(index, columnId, contentValue)}
               padding={0}
               outline="none"
-              isFullWidth
               size="fit-content"
               border="none"
               fontWeight={600}
               style={{ overflow: 'hidden' }}
-            />
+            /> */}
+            <Text>{content}</Text>
             <Flex direction="column">
               <IconButton
                 size="sm"
@@ -106,6 +77,9 @@ function Task({ id, index, content, columnId, deleteItem, editItem }) {
                 bg="none"
                 color="black"
                 icon={<InfoIcon />}
+                onClick={() => {
+                  editItem(index, columnId);
+                }}
                 bg="none"
                 _hover={{
                   bg: 'none',
