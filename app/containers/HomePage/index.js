@@ -59,7 +59,7 @@ const onDragEnd = (result, columns, setColumns) => {
     const destinationColumnItems = [...destinationColumn.items];
     const [removed] = sourceColumnItems.splice(source.index, 1);
     destinationColumnItems.splice(destination.index, 0, removed);
-    setColumns({
+    const finalColumns = {
       ...columns,
       [source.droppableId]: {
         ...sourceColumn,
@@ -69,19 +69,23 @@ const onDragEnd = (result, columns, setColumns) => {
         ...destinationColumn,
         items: destinationColumnItems,
       },
-    });
+    };
+    localStorage.setItem('columns', JSON.stringify(finalColumns));
+    setColumns(finalColumns);
   } else {
     const column = columns[source.droppableId];
     const copiedItems = [...column.items];
     const [removed] = copiedItems.splice(source.index, 1);
     copiedItems.splice(destination.index, 0, removed);
-    setColumns({
+    const finalColumns = {
       ...columns,
       [source.droppableId]: {
         ...column,
         items: copiedItems,
       },
-    });
+    };
+    localStorage.setItem('columns', JSON.stringify(finalColumns));
+    setColumns(finalColumns);
   }
 };
 
@@ -109,14 +113,15 @@ const handleAddItem = (
     };
     // console.log(obj);
     copiedItems.push(obj);
-    console.log(copiedItems);
-    setColumns({
+    const finalColumns = {
       ...columns,
       [currentId]: {
         ...column,
         items: copiedItems,
       },
-    });
+    };
+    localStorage.setItem('columns', JSON.stringify(finalColumns));
+    setColumns(finalColumns);
     setNewItem('');
     onToggle();
   }
@@ -126,13 +131,15 @@ const handleDeleteItem = (itemIndex, columns, columnId, setColumns) => {
   const column = columns[columnId];
   let copiedItems = [...column.items];
   copiedItems.splice(itemIndex, 1);
-  setColumns({
+  const finalColumns = {
     ...columns,
     [columnId]: {
       ...column,
       items: copiedItems,
     },
-  });
+  };
+  localStorage.setItem('columns', JSON.stringify(finalColumns));
+  setColumns(finalColumns);
 };
 
 const handleEditItem = (itemIndex, columns, columnId, setColumns, data) => {
@@ -141,18 +148,22 @@ const handleEditItem = (itemIndex, columns, columnId, setColumns, data) => {
   const itemToBeEditted = copiedItems.splice(itemIndex, 1)[0];
   itemToBeEditted.content = data;
   copiedItems.splice(itemIndex, 0, itemToBeEditted);
-  setColumns({
+  const finalColumns = {
     ...columns,
     [columnId]: {
       ...column,
       items: copiedItems,
     },
-  });
+  };
+  localStorage.setItem('columns', JSON.stringify(finalColumns));
+  setColumns(finalColumns);
 };
 
 export default function HomePage() {
   const { isOpen, onToggle } = useDisclosure();
-  const [columns, setColumns] = useState(columnsFromBackend);
+  const [columns, setColumns] = useState(
+    JSON.parse(localStorage.getItem('columns')) || columnsFromBackend,
+  );
   const [currentId, setCurrentId] = useState(null);
   const [newItem, setNewItem] = useState('');
   return (
