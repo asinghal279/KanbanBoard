@@ -52,19 +52,10 @@ function Task({
             {...provided.dragHandleProps}
             style={{ ...provided.draggableProps.style }}
           >
-            {/* <Textarea
-              value={contentValue}
-              onChange={e => setContentValue(e.target.value)}
-              onBlur={() => editItem(index, columnId, contentValue)}
-              padding={0}
-              outline="none"
-              size="fit-content"
-              border="none"
-              fontWeight={600}
-              style={{ overflow: 'hidden' }}
-            /> */}
-            <Text>{content}</Text>
-            <Flex direction="column">
+            <Text fontSize={18} fontWeight={600}>
+              {content}
+            </Text>
+            <Flex direction="row">
               <IconButton
                 size="sm"
                 bg="none"

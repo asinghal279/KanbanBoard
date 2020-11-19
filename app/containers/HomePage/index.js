@@ -29,6 +29,8 @@ import {
   Textarea,
   useDisclosure,
   ButtonGroup,
+  Input,
+  Text,
 } from '@chakra-ui/core';
 import { Droppable, DragDropContext } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
@@ -36,11 +38,11 @@ import { CheckIcon, CloseIcon, EditIcon } from '@chakra-ui/icons';
 import TaskCard from '../../components/TaskCard/index';
 
 const itemsFromBackend = [
-  { id: uuid(), content: 'First task' },
-  { id: uuid(), content: 'Second task' },
-  { id: uuid(), content: 'Third task' },
-  { id: uuid(), content: 'Fourth task' },
-  { id: uuid(), content: 'Fifth task' },
+  { id: uuid(), content: 'First task', description: 'Data1' },
+  { id: uuid(), content: 'Second task', description: 'Data2' },
+  { id: uuid(), content: 'Third task', description: 'Data3' },
+  { id: uuid(), content: 'Fourth task', description: 'Data4' },
+  { id: uuid(), content: 'Fifth task', description: 'Data5' },
 ];
 
 const columnsFromBackend = {
@@ -153,11 +155,34 @@ const handleDeleteItem = (itemIndex, columns, columnId, setColumns) => {
   setColumns(finalColumns);
 };
 
-const handleEditItem = (itemIndex, columns, columnId, setColumns, data) => {
+const handleEditItemContent = (
+  itemIndex,
+  columns,
+  columnId,
+  setColumns,
+  data,
+) => {
   const column = columns[columnId];
   let copiedItems = [...column.items];
   const itemToBeEditted = copiedItems.splice(itemIndex, 1)[0];
   itemToBeEditted.content = data;
+  copiedItems.splice(itemIndex, 0, itemToBeEditted);
+  const finalColumns = {
+    ...columns,
+    [columnId]: {
+      ...column,
+      items: copiedItems,
+    },
+  };
+  localStorage.setItem('columns', JSON.stringify(finalColumns));
+  setColumns(finalColumns);
+};
+
+const handleEditItemDesc = (itemIndex, columns, columnId, setColumns, data) => {
+  const column = columns[columnId];
+  let copiedItems = [...column.items];
+  const itemToBeEditted = copiedItems.splice(itemIndex, 1)[0];
+  itemToBeEditted.description = data;
   copiedItems.splice(itemIndex, 0, itemToBeEditted);
   const finalColumns = {
     ...columns,
@@ -181,11 +206,15 @@ export default function HomePage() {
   const [activeItemIndex, setActiveItemIndex] = useState(null);
   const [activeItemColumnId, setActiveItemColumnId] = useState(null);
   const [contentValue, setContentValue] = useState('');
+  const [description, setDescription] = useState('');
 
   useEffect(() => {
     if (activeItemColumnId != null && activeItemIndex != null) {
       setContentValue(
         columns[activeItemColumnId].items[activeItemIndex].content,
+      );
+      setDescription(
+        columns[activeItemColumnId].items[activeItemIndex].description,
       );
     }
   }, [activeItemColumnId, activeItemIndex]);
@@ -197,8 +226,14 @@ export default function HomePage() {
         <ModalContent>
           <ModalHeader>Task Details</ModalHeader>
           <ModalBody>
-            <Textarea
+            <Text as="i">
+              <CheckIcon mr={2} />
+              Title
+            </Text>
+            <Input
               value={contentValue}
+              mt={5}
+              mb={5}
               onChange={e => setContentValue(e.target.value)}
               onBlur={() =>
                 handleEditItem(
@@ -210,6 +245,30 @@ export default function HomePage() {
                 )
               }
               padding={0}
+              outline="none"
+              size="fit-content"
+              border="none"
+              fontWeight={600}
+              style={{ overflow: 'hidden' }}
+            />
+            <Text as="i">
+              <EditIcon mr={2} />
+              Description
+            </Text>
+            <Textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              onBlur={() =>
+                handleEditItemDesc(
+                  activeItemIndex,
+                  columns,
+                  activeItemColumnId,
+                  setColumns,
+                  contentValue,
+                )
+              }
+              padding={0}
+              mt={5}
               outline="none"
               size="fit-content"
               border="none"
