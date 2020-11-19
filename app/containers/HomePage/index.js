@@ -242,7 +242,7 @@ export default function HomePage() {
   const handleFilteredItems = val => {
     let obj = Object.entries(columns).reduce((acc, column) => {
       let obj2 = column[1].items.reduce((acc, item, index) => {
-        if (item.content.startsWith(val)) {
+        if (item.content.toLowerCase().startsWith(val.toLowerCase())) {
           let newObj = { ...item, itemIndex: index, columnId: column[0] };
           acc.push(newObj);
         }
