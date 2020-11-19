@@ -17,10 +17,6 @@ import {
   IconButton,
   Modal,
   ModalBody,
-  ModalCloseButton,
-  Editable,
-  EditableInput,
-  EditablePreview,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -28,176 +24,17 @@ import {
   Stack,
   Textarea,
   useDisclosure,
-  ButtonGroup,
   Input,
   Text,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
 } from '@chakra-ui/core';
 import { Droppable, DragDropContext } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
 import { CheckIcon, CloseIcon, EditIcon } from '@chakra-ui/icons';
 import TaskCard from '../../components/TaskCard/index';
-
-const itemsFromBackend = [
-  { id: uuid(), content: 'First task', description: 'Data1' },
-  { id: uuid(), content: 'Second task', description: 'Data2' },
-  { id: uuid(), content: 'Third task', description: 'Data3' },
-  { id: uuid(), content: 'Fourth task', description: 'Data4' },
-  { id: uuid(), content: 'Fifth task', description: 'Data5' },
-];
-
-const columnsFromBackend = {
-  [uuid()]: {
-    name: 'Todo',
-    items: itemsFromBackend,
-  },
-  [uuid()]: {
-    name: 'In-Progress',
-    items: [],
-  },
-  [uuid()]: {
-    name: 'Completed',
-    items: [],
-  },
-};
-
-const onDragEnd = (result, columns, setColumns) => {
-  if (!result.destination) {
-    return;
-  }
-  const { source, destination } = result;
-  if (source.droppableId != destination.droppableId) {
-    const sourceColumn = columns[source.droppableId];
-    const destinationColumn = columns[destination.droppableId];
-    const sourceColumnItems = [...sourceColumn.items];
-    const destinationColumnItems = [...destinationColumn.items];
-    const [removed] = sourceColumnItems.splice(source.index, 1);
-    destinationColumnItems.splice(destination.index, 0, removed);
-    const finalColumns = {
-      ...columns,
-      [source.droppableId]: {
-        ...sourceColumn,
-        items: sourceColumnItems,
-      },
-      [destination.droppableId]: {
-        ...destinationColumn,
-        items: destinationColumnItems,
-      },
-    };
-    localStorage.setItem('columns', JSON.stringify(finalColumns));
-    setColumns(finalColumns);
-  } else {
-    const column = columns[source.droppableId];
-    const copiedItems = [...column.items];
-    const [removed] = copiedItems.splice(source.index, 1);
-    copiedItems.splice(destination.index, 0, removed);
-    const finalColumns = {
-      ...columns,
-      [source.droppableId]: {
-        ...column,
-        items: copiedItems,
-      },
-    };
-    localStorage.setItem('columns', JSON.stringify(finalColumns));
-    setColumns(finalColumns);
-  }
-};
-
-const handleToggle = (onToggle, setCurrentId, currentId) => {
-  setCurrentId(currentId);
-  onToggle();
-};
-
-const handleAddItem = (
-  e,
-  item,
-  itemDesc,
-  columns,
-  currentId,
-  setColumns,
-  setNewItem,
-  setNewItemDesc,
-  onToggle,
-) => {
-  e.preventDefault();
-  if (item != '') {
-    const column = columns[currentId];
-    let copiedItems = [...column.items];
-    const obj = {
-      id: uuid(),
-      content: item,
-      description: itemDesc,
-    };
-    // console.log(obj);
-    copiedItems.push(obj);
-    const finalColumns = {
-      ...columns,
-      [currentId]: {
-        ...column,
-        items: copiedItems,
-      },
-    };
-    localStorage.setItem('columns', JSON.stringify(finalColumns));
-    setColumns(finalColumns);
-    setNewItem('');
-    setNewItemDesc('');
-    onToggle();
-  }
-};
-
-const handleDeleteItem = (itemIndex, columns, columnId, setColumns) => {
-  const column = columns[columnId];
-  let copiedItems = [...column.items];
-  copiedItems.splice(itemIndex, 1);
-  const finalColumns = {
-    ...columns,
-    [columnId]: {
-      ...column,
-      items: copiedItems,
-    },
-  };
-  localStorage.setItem('columns', JSON.stringify(finalColumns));
-  setColumns(finalColumns);
-};
-
-const handleEditItemContent = (
-  itemIndex,
-  columns,
-  columnId,
-  setColumns,
-  data,
-) => {
-  const column = columns[columnId];
-  let copiedItems = [...column.items];
-  const itemToBeEditted = copiedItems.splice(itemIndex, 1)[0];
-  itemToBeEditted.content = data;
-  copiedItems.splice(itemIndex, 0, itemToBeEditted);
-  const finalColumns = {
-    ...columns,
-    [columnId]: {
-      ...column,
-      items: copiedItems,
-    },
-  };
-  localStorage.setItem('columns', JSON.stringify(finalColumns));
-  setColumns(finalColumns);
-};
-
-const handleEditItemDesc = (itemIndex, columns, columnId, setColumns, data) => {
-  const column = columns[columnId];
-  let copiedItems = [...column.items];
-  const itemToBeEditted = copiedItems.splice(itemIndex, 1)[0];
-  itemToBeEditted.description = data;
-  copiedItems.splice(itemIndex, 0, itemToBeEditted);
-  const finalColumns = {
-    ...columns,
-    [columnId]: {
-      ...column,
-      items: copiedItems,
-    },
-  };
-  localStorage.setItem('columns', JSON.stringify(finalColumns));
-  setColumns(finalColumns);
-};
 
 export default function HomePage() {
   const { isOpen, onToggle } = useDisclosure();
@@ -212,7 +49,8 @@ export default function HomePage() {
   const [activeItemColumnId, setActiveItemColumnId] = useState(null);
   const [contentValue, setContentValue] = useState('');
   const [description, setDescription] = useState('');
-  const initialRef = React.useRef();
+  const [filterInputValue, setFilterInputValue] = useState('');
+  const [filteredItems, setFilteredItems] = useState([]);
 
   useEffect(() => {
     if (activeItemColumnId != null && activeItemIndex != null) {
@@ -225,8 +63,233 @@ export default function HomePage() {
     }
   }, [activeItemColumnId, activeItemIndex]);
 
+  const handleFilteredItems = val => {
+    let obj = Object.entries(columns).reduce((acc, column) => {
+      let obj2 = column[1].items.reduce((acc, item, index) => {
+        if (item.content.includes(val)) {
+          let newObj = { ...item, itemIndex: index, columnId: column[0] };
+          acc.push(newObj);
+        }
+        return acc;
+      }, []);
+      acc = acc.concat(obj2);
+      return acc;
+    }, []);
+    return obj;
+  };
+
+  useEffect(() => {
+    if (filterInputValue === '') {
+      setFilteredItems([]);
+    } else {
+      let obj = handleFilteredItems(filterInputValue);
+      setFilteredItems(prevState => ([...prevState], [...obj]));
+    }
+  }, [filterInputValue]);
+
+  const itemsFromBackend = [
+    { id: uuid(), content: 'First task', description: 'Data1' },
+    { id: uuid(), content: 'Second task', description: 'Data2' },
+    { id: uuid(), content: 'Third task', description: 'Data3' },
+    { id: uuid(), content: 'Fourth task', description: 'Data4' },
+    { id: uuid(), content: 'Fifth task', description: 'Data5' },
+  ];
+
+  const columnsFromBackend = {
+    [uuid()]: {
+      name: 'Todo',
+      items: itemsFromBackend,
+    },
+    [uuid()]: {
+      name: 'In-Progress',
+      items: [],
+    },
+    [uuid()]: {
+      name: 'Completed',
+      items: [],
+    },
+  };
+
+  const onDragEnd = (result, columns, setColumns) => {
+    if (!result.destination) {
+      return;
+    }
+    const { source, destination } = result;
+    if (source.droppableId != destination.droppableId) {
+      const sourceColumn = columns[source.droppableId];
+      const destinationColumn = columns[destination.droppableId];
+      const sourceColumnItems = [...sourceColumn.items];
+      const destinationColumnItems = [...destinationColumn.items];
+      const [removed] = sourceColumnItems.splice(source.index, 1);
+      destinationColumnItems.splice(destination.index, 0, removed);
+      const finalColumns = {
+        ...columns,
+        [source.droppableId]: {
+          ...sourceColumn,
+          items: sourceColumnItems,
+        },
+        [destination.droppableId]: {
+          ...destinationColumn,
+          items: destinationColumnItems,
+        },
+      };
+      localStorage.setItem('columns', JSON.stringify(finalColumns));
+      setColumns(finalColumns);
+    } else {
+      const column = columns[source.droppableId];
+      const copiedItems = [...column.items];
+      const [removed] = copiedItems.splice(source.index, 1);
+      copiedItems.splice(destination.index, 0, removed);
+      const finalColumns = {
+        ...columns,
+        [source.droppableId]: {
+          ...column,
+          items: copiedItems,
+        },
+      };
+      localStorage.setItem('columns', JSON.stringify(finalColumns));
+      setColumns(finalColumns);
+    }
+  };
+
+  const handleToggle = (onToggle, setCurrentId, currentId) => {
+    setCurrentId(currentId);
+    onToggle();
+  };
+
+  const handleAddItem = (
+    e,
+    item,
+    itemDesc,
+    columns,
+    currentId,
+    setColumns,
+    setNewItem,
+    setNewItemDesc,
+    onToggle,
+  ) => {
+    e.preventDefault();
+    if (item != '') {
+      const column = columns[currentId];
+      let copiedItems = [...column.items];
+      const obj = {
+        id: uuid(),
+        content: item,
+        description: itemDesc,
+      };
+      copiedItems.push(obj);
+      const finalColumns = {
+        ...columns,
+        [currentId]: {
+          ...column,
+          items: copiedItems,
+        },
+      };
+      localStorage.setItem('columns', JSON.stringify(finalColumns));
+      setColumns(finalColumns);
+      setNewItem('');
+      setNewItemDesc('');
+      onToggle();
+    }
+  };
+
+  const handleDeleteItem = (itemIndex, columns, columnId, setColumns) => {
+    const column = columns[columnId];
+    let copiedItems = [...column.items];
+    copiedItems.splice(itemIndex, 1);
+    const finalColumns = {
+      ...columns,
+      [columnId]: {
+        ...column,
+        items: copiedItems,
+      },
+    };
+    localStorage.setItem('columns', JSON.stringify(finalColumns));
+    setColumns(finalColumns);
+  };
+
+  const handleEditItemContent = (
+    itemIndex,
+    columns,
+    columnId,
+    setColumns,
+    data,
+  ) => {
+    const column = columns[columnId];
+    let copiedItems = [...column.items];
+    const itemToBeEditted = copiedItems.splice(itemIndex, 1)[0];
+    itemToBeEditted.content = data;
+    copiedItems.splice(itemIndex, 0, itemToBeEditted);
+    const finalColumns = {
+      ...columns,
+      [columnId]: {
+        ...column,
+        items: copiedItems,
+      },
+    };
+    localStorage.setItem('columns', JSON.stringify(finalColumns));
+    setColumns(finalColumns);
+  };
+
+  const handleEditItemDesc = (
+    itemIndex,
+    columns,
+    columnId,
+    setColumns,
+    data,
+  ) => {
+    const column = columns[columnId];
+    let copiedItems = [...column.items];
+    const itemToBeEditted = copiedItems.splice(itemIndex, 1)[0];
+    itemToBeEditted.description = data;
+    copiedItems.splice(itemIndex, 0, itemToBeEditted);
+    const finalColumns = {
+      ...columns,
+      [columnId]: {
+        ...column,
+        items: copiedItems,
+      },
+    };
+    localStorage.setItem('columns', JSON.stringify(finalColumns));
+    setColumns(finalColumns);
+  };
+
   return (
     <Box bg="#282c34" w="100%" minH="100vh" px={5}>
+      <Flex p={4} color="white" align="center">
+        <Text fontSize={18} mr={4}>
+          Search
+        </Text>
+        <Menu isOpen={filteredItems.length}>
+          <Input
+            placeholder="Enter card title..."
+            size="sm"
+            onChange={e => {
+              setFilterInputValue(e.target.value);
+            }}
+            value={filterInputValue}
+            variant="flushed"
+            w="20%"
+          />
+          <MenuButton display="hidden" />
+
+          <MenuList>
+            {filteredItems.map(item => (
+              <MenuItem
+                color="black"
+                onClick={() => {
+                  setActiveItemColumnId(item.columnId);
+                  setActiveItemIndex(item.itemIndex);
+                  setFilterInputValue('');
+                  setModalIsOpen(true);
+                }}
+              >
+                {item.content}
+              </MenuItem>
+            ))}
+          </MenuList>
+        </Menu>
+      </Flex>
       <Modal isOpen={modalIsOpen}>
         <ModalOverlay />
         <ModalContent>
