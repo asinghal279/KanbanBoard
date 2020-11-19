@@ -256,7 +256,7 @@ export default function HomePage() {
 
   return (
     <Box bg="#282c34" w="100%" minH="100vh" px={5}>
-      <Flex p={4} color="white" align="center">
+      <Flex p={4} color="white" align="center" bg="#49505e">
         <Text fontSize={18} mr={4}>
           Search
         </Text>
@@ -298,26 +298,6 @@ export default function HomePage() {
             </Button>
           ))}
         </Stack>
-        {/* <Menu isOpen={filteredItems.length}>
-          <MenuButton display="hidden" />
-
-          <MenuList>
-            {filteredItems.map(item => (
-              <MenuItem
-                color="black"
-                key={item.id}
-                onClick={() => {
-                  setActiveItemColumnId(item.columnId);
-                  setActiveItemIndex(item.itemIndex);
-                  setFilterInputValue('');
-                  setModalIsOpen(true);
-                }}
-              >
-                {item.content}
-              </MenuItem>
-            ))}
-          </MenuList>
-        </Menu> */}
       </Flex>
       <Modal isOpen={modalIsOpen}>
         <ModalOverlay />
