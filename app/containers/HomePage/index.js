@@ -110,10 +110,12 @@ const handleToggle = (onToggle, setCurrentId, currentId) => {
 const handleAddItem = (
   e,
   item,
+  itemDesc,
   columns,
   currentId,
   setColumns,
   setNewItem,
+  setNewItemDesc,
   onToggle,
 ) => {
   e.preventDefault();
@@ -123,6 +125,7 @@ const handleAddItem = (
     const obj = {
       id: uuid(),
       content: item,
+      description: itemDesc,
     };
     // console.log(obj);
     copiedItems.push(obj);
@@ -136,6 +139,7 @@ const handleAddItem = (
     localStorage.setItem('columns', JSON.stringify(finalColumns));
     setColumns(finalColumns);
     setNewItem('');
+    setNewItemDesc('');
     onToggle();
   }
 };
@@ -202,11 +206,13 @@ export default function HomePage() {
   );
   const [currentId, setCurrentId] = useState(null);
   const [newItem, setNewItem] = useState('');
+  const [newItemDescription, setNewItemDescription] = useState('');
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [activeItemIndex, setActiveItemIndex] = useState(null);
   const [activeItemColumnId, setActiveItemColumnId] = useState(null);
   const [contentValue, setContentValue] = useState('');
   const [description, setDescription] = useState('');
+  const initialRef = React.useRef();
 
   useEffect(() => {
     if (activeItemColumnId != null && activeItemIndex != null) {
@@ -236,7 +242,7 @@ export default function HomePage() {
               mb={5}
               onChange={e => setContentValue(e.target.value)}
               onBlur={() =>
-                handleEditItem(
+                handleEditItemContent(
                   activeItemIndex,
                   columns,
                   activeItemColumnId,
@@ -244,10 +250,8 @@ export default function HomePage() {
                   contentValue,
                 )
               }
-              padding={0}
+              pl={3}
               outline="none"
-              size="fit-content"
-              border="none"
               fontWeight={600}
               style={{ overflow: 'hidden' }}
             />
@@ -267,11 +271,10 @@ export default function HomePage() {
                   contentValue,
                 )
               }
-              padding={0}
+              pl={3}
               mt={5}
               outline="none"
               size="fit-content"
-              border="none"
               fontWeight={600}
               style={{ overflow: 'hidden' }}
             />
@@ -285,7 +288,6 @@ export default function HomePage() {
             >
               Close
             </Button>
-            <Button variant="ghost">Secondary Action</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -353,19 +355,29 @@ export default function HomePage() {
                                 handleAddItem(
                                   e,
                                   newItem,
+                                  newItemDescription,
                                   columns,
                                   currentId,
                                   setColumns,
                                   setNewItem,
+                                  setNewItemDescription,
                                   onToggle,
                                 );
                               }}
                             >
                               <FormControl>
-                                <Textarea
+                                <Input
                                   placeholder="Enter a title for this item..."
                                   value={newItem}
                                   onChange={e => setNewItem(e.target.value)}
+                                  mb={3}
+                                />
+                                <Textarea
+                                  placeholder="Enter a description for this item..."
+                                  value={newItemDescription}
+                                  onChange={e =>
+                                    setNewItemDescription(e.target.value)
+                                  }
                                 />
                                 <Flex justify="space-between">
                                   <Button
