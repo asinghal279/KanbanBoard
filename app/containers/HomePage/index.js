@@ -187,7 +187,6 @@ export default function HomePage() {
       setContentValue(
         columns[activeItemColumnId].items[activeItemIndex].content,
       );
-      setModalIsOpen(true);
     }
   }, [activeItemColumnId, activeItemIndex]);
 
@@ -196,7 +195,7 @@ export default function HomePage() {
       <Modal isOpen={modalIsOpen}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Modal Title</ModalHeader>
+          <ModalHeader>Task Details</ModalHeader>
           <ModalBody>
             <Textarea
               value={contentValue}
@@ -261,6 +260,7 @@ export default function HomePage() {
                               editItem={(itemIndex, columnId) => {
                                 setActiveItemColumnId(columnId);
                                 setActiveItemIndex(itemIndex);
+                                setModalIsOpen(true);
                               }}
                               deleteItem={(itemIndex, columnId) =>
                                 handleDeleteItem(
