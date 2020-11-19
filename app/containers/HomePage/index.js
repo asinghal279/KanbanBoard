@@ -37,6 +37,29 @@ import { CheckIcon, CloseIcon, EditIcon } from '@chakra-ui/icons';
 import TaskCard from '../../components/TaskCard/index';
 
 export default function HomePage() {
+  const itemsFromBackend = [
+    { id: uuid(), content: 'First task', description: 'Data1' },
+    { id: uuid(), content: 'Second task', description: 'Data2' },
+    { id: uuid(), content: 'Third task', description: 'Data3' },
+    { id: uuid(), content: 'Fourth task', description: 'Data4' },
+    { id: uuid(), content: 'Fifth task', description: 'Data5' },
+  ];
+
+  const columnsFromBackend = {
+    [uuid()]: {
+      name: 'Todo',
+      items: itemsFromBackend,
+    },
+    [uuid()]: {
+      name: 'In-Progress',
+      items: [],
+    },
+    [uuid()]: {
+      name: 'Completed',
+      items: [],
+    },
+  };
+
   const { isOpen, onToggle } = useDisclosure();
   const [columns, setColumns] = useState(
     JSON.parse(localStorage.getItem('columns')) || columnsFromBackend,
@@ -63,21 +86,6 @@ export default function HomePage() {
     }
   }, [activeItemColumnId, activeItemIndex]);
 
-  const handleFilteredItems = val => {
-    let obj = Object.entries(columns).reduce((acc, column) => {
-      let obj2 = column[1].items.reduce((acc, item, index) => {
-        if (item.content.includes(val)) {
-          let newObj = { ...item, itemIndex: index, columnId: column[0] };
-          acc.push(newObj);
-        }
-        return acc;
-      }, []);
-      acc = acc.concat(obj2);
-      return acc;
-    }, []);
-    return obj;
-  };
-
   useEffect(() => {
     if (filterInputValue === '') {
       setFilteredItems([]);
@@ -86,29 +94,6 @@ export default function HomePage() {
       setFilteredItems(prevState => ([...prevState], [...obj]));
     }
   }, [filterInputValue]);
-
-  const itemsFromBackend = [
-    { id: uuid(), content: 'First task', description: 'Data1' },
-    { id: uuid(), content: 'Second task', description: 'Data2' },
-    { id: uuid(), content: 'Third task', description: 'Data3' },
-    { id: uuid(), content: 'Fourth task', description: 'Data4' },
-    { id: uuid(), content: 'Fifth task', description: 'Data5' },
-  ];
-
-  const columnsFromBackend = {
-    [uuid()]: {
-      name: 'Todo',
-      items: itemsFromBackend,
-    },
-    [uuid()]: {
-      name: 'In-Progress',
-      items: [],
-    },
-    [uuid()]: {
-      name: 'Completed',
-      items: [],
-    },
-  };
 
   const onDragEnd = (result, columns, setColumns) => {
     if (!result.destination) {
@@ -254,6 +239,21 @@ export default function HomePage() {
     setColumns(finalColumns);
   };
 
+  const handleFilteredItems = val => {
+    let obj = Object.entries(columns).reduce((acc, column) => {
+      let obj2 = column[1].items.reduce((acc, item, index) => {
+        if (item.content.startsWith(val)) {
+          let newObj = { ...item, itemIndex: index, columnId: column[0] };
+          acc.push(newObj);
+        }
+        return acc;
+      }, []);
+      acc = acc.concat(obj2);
+      return acc;
+    }, []);
+    return obj;
+  };
+
   return (
     <Box bg="#282c34" w="100%" minH="100vh" px={5}>
       <Flex p={4} color="white" align="center">
@@ -266,6 +266,7 @@ export default function HomePage() {
             size="sm"
             onChange={e => {
               setFilterInputValue(e.target.value);
+              e.target.focus();
             }}
             value={filterInputValue}
             variant="flushed"
@@ -277,6 +278,7 @@ export default function HomePage() {
             {filteredItems.map(item => (
               <MenuItem
                 color="black"
+                key={item.id}
                 onClick={() => {
                   setActiveItemColumnId(item.columnId);
                   setActiveItemIndex(item.itemIndex);
