@@ -260,18 +260,45 @@ export default function HomePage() {
         <Text fontSize={18} mr={4}>
           Search
         </Text>
-        <Menu isOpen={filteredItems.length}>
-          <Input
-            placeholder="Enter card title..."
-            size="sm"
-            onChange={e => {
-              setFilterInputValue(e.target.value);
-              e.target.focus();
-            }}
-            value={filterInputValue}
-            variant="flushed"
-            w="20%"
-          />
+        <Input
+          placeholder="Enter card title..."
+          size="sm"
+          onChange={e => {
+            setFilterInputValue(e.target.value);
+            e.target.focus();
+          }}
+          value={filterInputValue}
+          variant="flushed"
+          w="20%"
+        />
+        <Stack
+          position="absolute"
+          p={2}
+          top="47px"
+          left="110px"
+          w={200}
+          bg="white"
+          d={filteredItems.length ? 'flex' : 'none'}
+          sapcing={4}
+          direction="column"
+        >
+          {filteredItems.map(item => (
+            <Button
+              color="black"
+              w="100%"
+              key={item.id}
+              onClick={() => {
+                setActiveItemColumnId(item.columnId);
+                setActiveItemIndex(item.itemIndex);
+                setFilterInputValue('');
+                setModalIsOpen(true);
+              }}
+            >
+              {item.content}
+            </Button>
+          ))}
+        </Stack>
+        {/* <Menu isOpen={filteredItems.length}>
           <MenuButton display="hidden" />
 
           <MenuList>
@@ -290,7 +317,7 @@ export default function HomePage() {
               </MenuItem>
             ))}
           </MenuList>
-        </Menu>
+        </Menu> */}
       </Flex>
       <Modal isOpen={modalIsOpen}>
         <ModalOverlay />
